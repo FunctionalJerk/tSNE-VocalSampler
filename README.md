@@ -1,14 +1,16 @@
 # tSNE-VocalSampler
 
-A software sampler programmed in [SuperCollider](https://github.com/supercollider/supercollider) playing a tSNE-Scatterplot.
+A software sampler programmed in [SuperCollider](https://github.com/supercollider/supercollider) playing a tSNE-Scatterplot.  
+
 This projects builds upon a series of projects, where I created a sample library of vocal interjections and extracted their F0-data. 
 This data would later serve different projects in art and artistic research, this being one of them.  
-This application was strongly inspired by -and dependent on ml4a's [AudioTSNEViewer](https://ml4a.github.io/guides/AudioTSNEViewer/). 
+My application was strongly inspired by -and dependent on ml4a's [AudioTSNEViewer](https://ml4a.github.io/guides/AudioTSNEViewer/). 
 
-Visit the project on [my website](https://functionaljerk.github.io/projects/VocalSampler/) to get general information and a demo of my sampler. 
+Visit the project on [my website](https://functionaljerk.github.io/projects/VocalSampler/) to get general information and a video-demo of my sampler. 
 
 General instructions will follow shortly.  
-Meanwhile (and if you can read German), please refer to `doc/Vocal-Sampler_Projektdokumentation.PDF' and study the code to understand what's going on here (and why there's little use in a detailed *how-to*).
+Meanwhile (and if you can read German), please refer to `doc/Vocal-Sampler_Projektdokumentation.PDF` and/or study the code to understand what's going on here 
+(and why there's little use in a detailed *how-to*).
 
 Very shortly: 
 You basically cannot directly recreate this project without creating your own sample library and putting it into `data/Wave/*`.
