@@ -1,4 +1,3 @@
-{ SinOsc.ar * 0.2 ! 2 }.play
 
 ///////////////////////////////////////
 ////////// Initialisierung
@@ -8,7 +7,7 @@
 ////   csv-Dateien unter "../data/csv" befinden.
 
 (
-var yPosButt, play, switch, emot, expr, mix, speed;
+var yPosButt, play, loop, quant, switch, emot, expr, mix, speed;
 var xSpec, ySpec, bounds, cols, list;
 var nodes, playBus, synthBus, resynth;
 
@@ -48,21 +47,28 @@ resynth = {|index, pan|
 	var node = Synth(\resynth, [\pan, pan]);
 	var csv = dict.select{|x| x.at("index") == index.asString }.reduce.at("csv");
 	csv = CSVFileReader.read(csv.standardizePath, startRow: 1);
-	csv = csv.collect{|x| if(x[2]=="NA"){ [0.0, x[3].asFloat, x[4].asFloat] } { [x[2].asFloat, x[3].asFloat, x[4].asFloat] } };
+	csv = csv.collect{|x| if(x[2]=="NA"){ [0.0] ++ x[3..4].asFloat } { x[2..4].asFloat } };
 
 	if(nodes[index].notNil) { nodes[index].release; nodes.put(index, nil) };
 	nodes.put(index, node);
 
 	{
 		csv.do{|x|
+			var freq, amp, sel;
+
+			# freq, amp, sel = x[..2];
+
+			if(quant.asBoolean) {
+				freq = freq.cpsmidi.round.midicps;
+			};
 
 			if(x[0] < 20) { node.set(\amp, 0.0) } {
-				node.set(\freq, x[0], \amp, x[1], \sel, x[2]);
+				node.set(\freq, freq, \amp, amp, \sel, sel);
 			};
 
 			0.001.wait
 		};
-		node.set(\amp, 0);
+		// node.set(\amp, 0);
 		node.release;
 		nodes.put(index, nil);
 
@@ -90,6 +96,8 @@ expr = [];
 i = dict.size.rand;
 yPosButt = 30;
 play = 0;
+loop = 0;
+quant = 0;
 switch = 0;
 mix = 0.0;
 speed = 1.0;
@@ -159,17 +167,35 @@ c = Slider(w, Rect(30,yPosButt,200,20)).action_({ |val|
 	m.string_(val.asString);
 	mix.set(\mix, val);
 });
+
+yPosButt = yPosButt + 30;
+r = Button(w, Rect(30,yPosButt,200,20)).states_([
+	["quant", Color.white, Color.black],
+	["quant", Color.white, Color.red]
+]).action_({|state|
+	quant = state.value;
+});
 // c.valueAction_(0.0);
 
 yPosButt = yPosButt + 30;
 StaticText(w, Rect(30,yPosButt,120,20)).string_("Speed: ").stringColor_(Color.white);
-f = StaticText(w, Rect(200,yPosButt,40,20));
+f = StaticText(w, Rect(120,yPosButt,40,20));
+t = StaticText(w, Rect(170,yPosButt,80,20));
+
+StaticText(w, Rect(150,yPosButt,80,20)).string_("=").stringColor_(Color.white);
+StaticText(w, Rect(210,yPosButt,40,20)).string_("BPM").stringColor_(Color.white);
+
 f.string_("1.0");
+t.string_("60.0");
 f.stringColor_(Color.white);
+t.stringColor_(Color.white);
+
 yPosButt = yPosButt + 20;
 e = Slider(w, Rect(30,yPosButt,200,20)).value_(0.0).action_({|val|
 	val = g.map(val.value).round(0.1);
 	f.string_(val.asString);
+	t.string_((val * 60).round(0.1));
+
 	speed = val.value
 });
 
@@ -196,6 +222,15 @@ p = Button(w, Rect(30,yPosButt,200,20)).states_([
 		0, { d.valueAction_(1.0.rand); },
 		1, { list = []; }
 	)
+});
+
+yPosButt = yPosButt + 30;
+q = Button(w, Rect(30,yPosButt,200,20)).states_([
+	["loop", Color.white, Color.black],
+	["loop", Color.white, Color.red]
+]).action_({|state|
+
+	loop = state.value;
 });
 
 // draw
@@ -273,7 +308,11 @@ s.waitForBoot({
 					1, { i = dist.pop },
 					2, { i = dist.choose }
 				);
-			} { p.valueAction_(0) };
+			} {
+				if(loop.asBoolean)
+				{ i = n.map(d.value).asInteger - 1; list = [];}
+				{ p.valueAction_(0) }
+			};
 			0.yield
 		}
 	};
